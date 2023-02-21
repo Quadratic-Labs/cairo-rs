@@ -16,7 +16,7 @@ use serde_json::Number;
 use std::{collections::HashMap, fmt, io::Read};
 
 // This enum is used to deserialize program builtins into &str and catch non-valid names
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum BuiltinName {
     output,
@@ -42,7 +42,7 @@ impl BuiltinName {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ProgramJson {
     pub prime: String,
     pub builtins: Vec<BuiltinName>,
@@ -129,7 +129,7 @@ pub struct Location {
     pub start_col: u32,
 }
 
-#[derive(Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct DebugInfo {
     instruction_locations: HashMap<usize, InstructionLocation>,
 }

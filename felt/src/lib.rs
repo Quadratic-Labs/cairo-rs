@@ -822,6 +822,9 @@ mod test {
     use super::*;
     use proptest::prelude::*;
 
+    const FELT_PATTERN: &str = "(0|[1-9][0-9]*)";
+    const FELT_NON_ZERO_PATTERN: &str = "[1-9][0-9]*";
+
     proptest! {
         #[test]
         #[allow(deprecated)]
@@ -1053,6 +1056,43 @@ mod test {
             let y = Felt::parse_bytes(y.as_bytes(), 10).unwrap();
             prop_assert!(x.is_multiple_of(&y));
         }
+
+        #[test]
+        fn non_zero_felt_is_always_positive(ref x in FELT_NON_ZERO_PATTERN) {
+            let x = Felt::parse_bytes(x.as_bytes(), 10).unwrap();
+            prop_assert!(x.is_positive())
+        }
+
+        #[test]
+        fn felt_is_never_negative(ref x in FELT_PATTERN) {
+            let x = Felt::parse_bytes(x.as_bytes(), 10).unwrap();
+            prop_assert!(!x.is_negative())
+        }
+
+
+        #[test]
+        fn non_zero_felt_signum_is_always_one(ref x in FELT_NON_ZERO_PATTERN) {
+            let x = Felt::parse_bytes(x.as_bytes(), 10).unwrap();
+            let one = Felt::one();
+            prop_assert_eq!(x.signum(), one)
+        }
+
+        #[test]
+        fn sub_abs(ref x in FELT_PATTERN, ref y in FELT_PATTERN) {
+            let x = Felt::parse_bytes(x.as_bytes(), 10).unwrap();
+            let y = Felt::parse_bytes(y.as_bytes(), 10).unwrap();
+
+            let expected_abs_sub = if x > y {&x - &y} else {&y - &x};
+
+            prop_assert_eq!(&x.abs_sub(&y), &expected_abs_sub)
+        }
+
+        #[test]
+        fn abs(ref x in FELT_PATTERN) {
+            let x = Felt::parse_bytes(x.as_bytes(), 10).unwrap();
+            prop_assert_eq!(&x, &x.abs())
+        }
+
     }
 
     #[test]
@@ -1130,5 +1170,11 @@ mod test {
         let felt_non_zero = Felt::new(3);
         assert!(felt_zero.is_zero());
         assert!(!felt_non_zero.is_zero())
+    }
+
+    #[test]
+    fn signum_of_zero_is_zero() {
+        let zero = Felt::zero();
+        assert_eq!(&zero.signum(), &zero)
     }
 }
